@@ -1,33 +1,11 @@
 import * as React from "react";
-import { StyleSheet, View } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { PaperProvider, BottomNavigation, Text } from "react-native-paper";
+import { PaperProvider, BottomNavigation } from "react-native-paper";
 import Ionicons from "@expo/vector-icons/Ionicons";
-
-function HomeScreen() {
-  return (
-    <View style={styles.container}>
-      <Text variant="headlineMedium">Home!</Text>
-    </View>
-  );
-}
-
-function WorkoutScreen() {
-  return (
-    <View style={styles.container}>
-      <Text variant="headlineMedium">Workout!</Text>
-    </View>
-  );
-}
-
-function SettingsScreen() {
-  return (
-    <View style={styles.container}>
-      <Text variant="headlineMedium">Settings!</Text>
-    </View>
-  );
-}
+import HomeScreen from "./screens/HomeScreen";
+import WorkoutScreen from "./screens/WorkoutScreen";
+import SettingsScreen from "./screens/SettingsScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -119,11 +97,3 @@ export default function App() {
     </PaperProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});

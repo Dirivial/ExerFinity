@@ -1,4 +1,4 @@
-import { Text, TextInput } from "react-native-paper";
+import { Text, TextInput, List, MD3Colors } from "react-native-paper";
 import * as SQLite from "expo-sqlite";
 import { useState, useEffect } from "react";
 import {
@@ -27,47 +27,49 @@ function openDatabase() {
 
 const db = openDatabase();
 
-function Workouts({ done: doneHeading, onPressItem }) {
-  const [workouts, setWorkouts] = useState(null);
+function Items({ done: doneHeading, onPressItem }) {
+  const [items, setItems] = useState(null);
 
   useEffect(() => {
     db.transaction((tx) => {
       tx.executeSql(
         `select * from items where done = ?;`,
         [doneHeading ? 1 : 0],
-        (_, { rows: { _array } }) => setWorkouts(_array)
+        (_, { rows: { _array } }) => setItems(_array)
       );
     });
   }, []);
 
   const heading = doneHeading ? "Completed" : "Todo";
 
-  if (workouts === null || workouts.length === 0) {
+  if (items === null || items.length === 0) {
     return null;
   }
 
   return (
     <View style={styles.sectionContainer}>
-      <Text style={styles.sectionHeading}>{heading}</Text>
-      {workouts.map(({ id, done, value }) => (
-        <TouchableOpacity
-          key={id}
-          onPress={() => onPressItem && onPressItem(id)}
-          style={{
-            backgroundColor: done ? "#1c9963" : "#fff",
-            borderColor: "#000",
-            borderWidth: 1,
-            padding: 8,
-          }}
-        >
-          <Text style={{ color: done ? "#fff" : "#000" }}>{value}</Text>
-        </TouchableOpacity>
-      ))}
+      <List.Section>
+        <List.Subheader>{heading}</List.Subheader>
+        {items.map(({ id, done, value }) => (
+          <TouchableOpacity
+            key={id}
+            onPress={() => onPressItem && onPressItem(id)}
+            style={{
+              backgroundColor: done ? "#1c9963" : "#fff",
+              borderColor: "#000",
+              borderWidth: 1,
+              padding: 8,
+            }}
+          >
+            <Text style={{ color: done ? "#fff" : "#000" }}>{value}</Text>
+          </TouchableOpacity>
+        ))}
+      </List.Section>
     </View>
   );
 }
 
-export default function WorkoutScreen() {
+export default function SQLiteExampleScreen() {
   const [text, setText] = useState(null);
   const [forceUpdate, forceUpdateId] = useForceUpdate();
 
@@ -98,7 +100,9 @@ export default function WorkoutScreen() {
   };
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>SQLite Example</Text>
+      <Text variant="headlineMedium" style={styles.heading}>
+        SQLite Example
+      </Text>
 
       {Platform.OS === "web" ? (
         <View
@@ -122,7 +126,36 @@ export default function WorkoutScreen() {
               value={text}
             />
           </View>
-          <ScrollView style={styles.listArea}></ScrollView>
+          <ScrollView style={styles.listArea}>
+            <Items
+              key={`forceupdate-todo-${forceUpdateId}`}
+              done={false}
+              onPressItem={(id) =>
+                db.transaction(
+                  (tx) => {
+                    tx.executeSql(`update items set done = 1 where id = ?;`, [
+                      id,
+                    ]);
+                  },
+                  null,
+                  forceUpdate
+                )
+              }
+            />
+            <Items
+              done={true}
+              key={`forceupdate-done-${forceUpdateId}`}
+              onPressItem={(id) =>
+                db.transaction(
+                  (tx) => {
+                    tx.executeSql(`delete from items where id = ?;`, [id]);
+                  },
+                  null,
+                  forceUpdate
+                )
+              }
+            />
+          </ScrollView>
         </>
       )}
     </View>
@@ -141,7 +174,6 @@ const styles = StyleSheet.create({
     paddingTop: Constants.statusBarHeight,
   },
   heading: {
-    fontSize: 20,
     fontWeight: "bold",
     textAlign: "center",
   },

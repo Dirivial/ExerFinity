@@ -157,6 +157,7 @@ export default function SettingsScreen() {
         }}
       />
       <TextInput
+        style={styles.listItem}
         label="Email"
         mode="outlined"
         value={email}
@@ -167,6 +168,7 @@ export default function SettingsScreen() {
       />
 
       <TextInput
+        style={styles.listItem}
         placeholder="Date of Birth"
         value={dateOfBirth}
         mode="outlined"
@@ -177,6 +179,7 @@ export default function SettingsScreen() {
       />
 
       <TextInput
+        style={styles.listItem}
         placeholder="Gender"
         value={gender}
         mode="outlined"
@@ -233,8 +236,10 @@ export default function SettingsScreen() {
         />
       </View>
 
-      <Button onPress={() => wipeData()}>Wipe Data</Button>
-      <Button onPress={() => runSetup()}>Run Setup</Button>
+      <View style={styles.bottomButtonsContainer}>
+        <Button onPress={() => wipeData()}>Wipe Data</Button>
+        <Button onPress={() => runSetup()}>Run Setup</Button>
+      </View>
     </ScrollView>
   );
 }
@@ -275,12 +280,11 @@ const styles = StyleSheet.create({
   settingsList: {
     flex: 1,
     flexDirection: "column",
-    rowGap: 0,
     paddingTop: Constants.statusBarHeight,
     paddingHorizontal: 10,
   },
   listItem: {
-    marginVertical: 0,
+    marginBottom: 5,
   },
   unit: {
     alignSelf: "center",
@@ -301,5 +305,11 @@ const styles = StyleSheet.create({
   heading: {
     fontWeight: "bold",
     textAlign: "center",
+  },
+  bottomButtonsContainer: {
+    marginTop: 100,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
   },
 });

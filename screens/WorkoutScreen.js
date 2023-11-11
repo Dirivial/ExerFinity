@@ -145,6 +145,7 @@ export default function WorkoutScreen() {
                 onSubmitEditing={() => {
                   add(text);
                   setText(null);
+                  setVisible(false);
                 }}
                 placeholder="Name"
                 label="Workout name"
@@ -214,6 +215,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   sectionContainer: {
+    paddingBottom: 64,
     marginBottom: 16,
   },
   sectionHeading: {
@@ -227,7 +229,6 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: "absolute",
-    //transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],
     margin: 10,
     right: 0,
     bottom: 0,

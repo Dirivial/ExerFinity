@@ -56,7 +56,7 @@ export default function SettingsScreen() {
         tx.executeSql(
           "CREATE TABLE IF NOT EXISTS User (user_id INTEGER PRIMARY KEY,username TEXT,email TEXT,password TEXT,date_of_birth DATE,gender TEXT,height REAL, metric_height BOOL,weight REAL, metric_weight BOOL);"
         );
-        tx.executeSql("INSERT INTO User (user_id) VALUES (?)", [0]);
+        tx.executeSql("INSERT OR IGNORE INTO User (user_id) VALUES (?)", [0]);
         tx.executeSql(
           "CREATE TABLE IF NOT EXISTS Workout (workout_id INTEGER PRIMARY KEY,date DATE,duration INTEGER,calories_burned INTEGER);"
         );
@@ -112,6 +112,7 @@ export default function SettingsScreen() {
   };
 
   useEffect(() => {
+    runSetup();
     db.transaction((tx) => {
       // Get the user's information from the database
       tx.executeSql(
@@ -156,7 +157,6 @@ export default function SettingsScreen() {
         }}
       />
       <TextInput
-        outlineStyle={styles.input}
         label="Email"
         mode="outlined"
         value={email}
@@ -274,9 +274,13 @@ function MetricImperialInput({ metric, setMetric }) {
 const styles = StyleSheet.create({
   settingsList: {
     flex: 1,
-    rowGap: 15,
+    flexDirection: "column",
+    rowGap: 0,
     paddingTop: Constants.statusBarHeight,
     paddingHorizontal: 10,
+  },
+  listItem: {
+    marginVertical: 0,
   },
   unit: {
     alignSelf: "center",

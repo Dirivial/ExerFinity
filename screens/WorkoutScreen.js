@@ -9,13 +9,7 @@ import {
 } from "react-native-paper";
 import * as SQLite from "expo-sqlite";
 import { useState, useEffect } from "react";
-import {
-  Platform,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Platform, ScrollView, StyleSheet, View } from "react-native";
 import Constants from "expo-constants";
 
 function openDatabase() {
@@ -42,7 +36,6 @@ function Workouts({ onPressItem }) {
     db.transaction((tx) => {
       tx.executeSql(`select * from Workout`, [], (_, { rows: { _array } }) => {
         setWorkouts(_array);
-        console.log(_array);
       });
     });
   }, []);
@@ -55,14 +48,13 @@ function Workouts({ onPressItem }) {
 
   return (
     <View style={styles.sectionContainer}>
-      {workouts.map(({ id, name }) => (
+      {workouts.map(({ name, workout_id }) => (
         <Button
-          key={id}
+          key={workout_id}
           mode="elevated"
-          onPress={() => onPressItem && onPressItem(id)}
+          onPress={() => onPressItem && onPressItem(workout_id)}
           style={{
-            backgroundColor: "#fff",
-            //borderColor: "#000",
+            backgroundColor: "#f5f5f5",
             borderWidth: 1,
             borderRadius: 5,
             marginHorizontal: 32,
@@ -113,8 +105,8 @@ export default function WorkoutScreen() {
 
   return (
     <View style={styles.container}>
-      <Surface elevation={1} style={styles.headerContainer}>
-        <Text style={styles.heading}>Workouts</Text>
+      <Surface elevation={0} style={styles.headerContainer}>
+        <Text style={styles.heading}>Select A Workout</Text>
       </Surface>
 
       {Platform.OS === "web" ? (

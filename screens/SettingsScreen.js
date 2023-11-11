@@ -58,7 +58,7 @@ export default function SettingsScreen() {
         );
         tx.executeSql("INSERT OR IGNORE INTO User (user_id) VALUES (?)", [0]);
         tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS Workout (workout_id INTEGER PRIMARY KEY,date DATE,duration INTEGER,calories_burned INTEGER);"
+          "CREATE TABLE IF NOT EXISTS Workout (workout_id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT, date DATE,duration INTEGER,calories_burned INTEGER);"
         );
         tx.executeSql(
           "CREATE TABLE IF NOT EXISTS Exercise (exercise_id INTEGER PRIMARY KEY,name TEXT,description TEXT,category TEXT,equipment_required TEXT);"

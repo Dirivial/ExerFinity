@@ -62,22 +62,6 @@ export default function App() {
           )}
         >
           <Tab.Screen
-            name="SQLite Example"
-            component={SQLiteExampleScreen}
-            options={{
-              tabBarLabel: "Todo",
-              tabBarIcon: ({ color, size }) => {
-                return (
-                  <Ionicons
-                    name="checkmark-circle-outline"
-                    size={size}
-                    color={color}
-                  />
-                );
-              },
-            }}
-          />
-          <Tab.Screen
             name="Workout"
             component={WorkoutScreen}
             options={{

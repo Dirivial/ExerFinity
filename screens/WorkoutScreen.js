@@ -21,7 +21,7 @@ function openDatabase() {
     };
   }
 
-  const db = SQLite.openDatabase("db.db");
+  const db = SQLite.openDatabase("db.db", "1.0");
   return db;
 }
 
@@ -71,14 +71,6 @@ export default function WorkoutScreen() {
   const [text, setText] = useState(null);
   const [forceUpdate, forceUpdateId] = useForceUpdate();
 
-  useEffect(() => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        "create table if not exists items (id integer primary key not null, done int, value text);"
-      );
-    });
-  }, []);
-
   const add = (text) => {
     // is text empty?
     if (text === null || text === "") {
@@ -87,9 +79,23 @@ export default function WorkoutScreen() {
 
     db.transaction(
       (tx) => {
-        tx.executeSql("insert into items (done, value) values (0, ?)", [text]);
-        tx.executeSql("select * from items", [], (_, { rows }) =>
-          console.log(JSON.stringify(rows))
+        tx.executeSql(
+          "CREATE TABLE IF NOT EXISTS Workout (workout_id INTEGER PRIMARY KEY,date DATE,duration INTEGER,calories_burned INTEGER);"
+        );
+        tx.executeSql(
+          "CREATE TABLE IF NOT EXISTS Exercise (exercise_id INTEGER PRIMARY KEY,name TEXT,description TEXT,category TEXT,equipment_required TEXT);"
+        );
+        tx.executeSql(
+          "CREATE TABLE IF NOT EXISTS ExerciseInstance (instance_id INTEGER PRIMARY KEY,workout_id INTEGER REFERENCES Workout(workout_id),exercise_id INTEGER REFERENCES Exercise(exercise_id),sets INTEGER,reps INTEGER,duration INTEGER,order_in_workout INTEGER"
+        );
+        tx.executeSql(
+          "CREATE TABLE IF NOT EXISTS SuperSet (superset_id INTEGER PRIMARY KEY,workout_id INTEGER REFERENCES Workout(workout_id),name TEXT,order_in_workout INTEGER);"
+        );
+        tx.executeSql(
+          "CREATE TABLE IF NOT EXISTS SuperSetExercise (superset_id INTEGER REFERENCES SuperSet(superset_id),exercise_id INTEGER REFERENCES Exercise(exercise_id),order_in_superset INTEGER,PRIMARY KEY (superset_id, exercise_id));"
+        );
+        tx.executeSql(
+          "CREATE TABLE IF NOT EXISTS Progress (progress_id INTEGER PRIMARY KEY,user_id INTEGER REFERENCES User(user_id),exercise_id INTEGER REFERENCES Exercise(exercise_id),date DATE,weight REAL,reps_completed INTEGER,time_taken INTEGER);"
         );
       },
       null,

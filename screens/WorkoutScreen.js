@@ -11,6 +11,9 @@ import * as SQLite from "expo-sqlite";
 import { useState, useEffect } from "react";
 import { Platform, ScrollView, StyleSheet, View } from "react-native";
 import Constants from "expo-constants";
+import { createStackNavigator } from "@react-navigation/stack";
+
+const Stack = createStackNavigator();
 
 function openDatabase() {
   if (Platform.OS === "web") {
@@ -29,7 +32,7 @@ function openDatabase() {
 
 const db = openDatabase();
 
-function Workouts({ onPressItem }) {
+function Workouts({ onPressItem, navigate: navigate }) {
   const [workouts, setWorkouts] = useState(null);
 
   useEffect(() => {
@@ -52,7 +55,7 @@ function Workouts({ onPressItem }) {
         <Button
           key={workout_id}
           mode="elevated"
-          onPress={() => onPressItem && onPressItem(workout_id)}
+          onPress={() => navigate(workout_id)}
           style={{
             backgroundColor: "#f5f5f5",
             borderWidth: 1,
@@ -76,7 +79,7 @@ function Workouts({ onPressItem }) {
   );
 }
 
-export default function WorkoutScreen() {
+function WorkoutListScreen({ navigation }) {
   const [text, setText] = useState(null);
   const [visible, setVisible] = useState(false);
   const [forceUpdate, forceUpdateId] = useForceUpdate();
@@ -87,13 +90,17 @@ export default function WorkoutScreen() {
       return false;
     }
 
-    console.log("Trying to add '" + text + "' to workouts");
-
     db.transaction(
       (tx) => {
-        tx.executeSql(`INSERT INTO Workout (name) VALUES (?)`, [text]);
-        tx.executeSql("select * from Workout", [], (_, { rows }) =>
-          console.log(JSON.stringify(rows))
+        tx.executeSql(
+          `INSERT INTO Workout (name) VALUES (?)`,
+          [text],
+          () => {
+            console.log("Workout added!");
+          },
+          (error) => {
+            console.log("Error on insering new workout: " + error);
+          }
         );
       },
       (error) => {
@@ -165,11 +172,37 @@ export default function WorkoutScreen() {
           </Portal>
           <View style={styles.flexRow}></View>
           <ScrollView style={styles.listArea}>
-            <Workouts key={`forceupdate-done-${forceUpdateId}`} />
+            <Workouts
+              key={`forceupdate-done-${forceUpdateId}`}
+              navigate={(workout_id) => {
+                navigation.navigate("Create Workout", {
+                  workout_id: workout_id,
+                });
+              }}
+            />
           </ScrollView>
         </>
       )}
     </View>
+  );
+}
+
+function SomeSettingsScreen({ navigation, route }) {
+  return (
+    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+      <Button onPress={() => navigation.goBack()}>
+        Workout: {route.params.workout_id}
+      </Button>
+    </View>
+  );
+}
+
+export default function WorkoutScreen() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="WorkoutList" component={WorkoutListScreen} />
+      <Stack.Screen name="Create Workout" component={SomeSettingsScreen} />
+    </Stack.Navigator>
   );
 }
 

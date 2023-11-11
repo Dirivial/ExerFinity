@@ -1,4 +1,12 @@
-import { Text, TextInput } from "react-native-paper";
+import {
+  Text,
+  TextInput,
+  FAB,
+  Surface,
+  Portal,
+  Modal,
+  Button,
+} from "react-native-paper";
 import * as SQLite from "expo-sqlite";
 import { useState, useEffect } from "react";
 import {
@@ -27,41 +35,50 @@ function openDatabase() {
 
 const db = openDatabase();
 
-function Workouts({ done: doneHeading, onPressItem }) {
+function Workouts({ onPressItem }) {
   const [workouts, setWorkouts] = useState(null);
 
   useEffect(() => {
     db.transaction((tx) => {
-      tx.executeSql(
-        `select * from items where done = ?;`,
-        [doneHeading ? 1 : 0],
-        (_, { rows: { _array } }) => setWorkouts(_array)
-      );
+      tx.executeSql(`select * from Workout`, [], (_, { rows: { _array } }) => {
+        setWorkouts(_array);
+        console.log(_array);
+      });
     });
   }, []);
 
-  const heading = doneHeading ? "Completed" : "Todo";
-
   if (workouts === null || workouts.length === 0) {
-    return null;
+    return (
+      <Text style={styles.noWorkoutsText}>Add a workout to get started!</Text>
+    );
   }
 
   return (
     <View style={styles.sectionContainer}>
-      <Text style={styles.sectionHeading}>{heading}</Text>
-      {workouts.map(({ id, done, value }) => (
-        <TouchableOpacity
+      {workouts.map(({ id, name }) => (
+        <Button
           key={id}
+          mode="elevated"
           onPress={() => onPressItem && onPressItem(id)}
           style={{
-            backgroundColor: done ? "#1c9963" : "#fff",
-            borderColor: "#000",
+            backgroundColor: "#fff",
+            //borderColor: "#000",
             borderWidth: 1,
-            padding: 8,
+            borderRadius: 5,
+            marginHorizontal: 32,
+            marginVertical: 8,
           }}
         >
-          <Text style={{ color: done ? "#fff" : "#000" }}>{value}</Text>
-        </TouchableOpacity>
+          <Text
+            style={{
+              height: 100,
+              textAlignVertical: "center",
+              fontSize: 24,
+            }}
+          >
+            {name}
+          </Text>
+        </Button>
       ))}
     </View>
   );
@@ -69,6 +86,7 @@ function Workouts({ done: doneHeading, onPressItem }) {
 
 export default function WorkoutScreen() {
   const [text, setText] = useState(null);
+  const [visible, setVisible] = useState(false);
   const [forceUpdate, forceUpdateId] = useForceUpdate();
 
   const add = (text) => {
@@ -77,34 +95,27 @@ export default function WorkoutScreen() {
       return false;
     }
 
+    console.log("Trying to add '" + text + "' to workouts");
+
     db.transaction(
       (tx) => {
-        tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS Workout (workout_id INTEGER PRIMARY KEY,date DATE,duration INTEGER,calories_burned INTEGER);"
-        );
-        tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS Exercise (exercise_id INTEGER PRIMARY KEY,name TEXT,description TEXT,category TEXT,equipment_required TEXT);"
-        );
-        tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS ExerciseInstance (instance_id INTEGER PRIMARY KEY,workout_id INTEGER REFERENCES Workout(workout_id),exercise_id INTEGER REFERENCES Exercise(exercise_id),sets INTEGER,reps INTEGER,duration INTEGER,order_in_workout INTEGER"
-        );
-        tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS SuperSet (superset_id INTEGER PRIMARY KEY,workout_id INTEGER REFERENCES Workout(workout_id),name TEXT,order_in_workout INTEGER);"
-        );
-        tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS SuperSetExercise (superset_id INTEGER REFERENCES SuperSet(superset_id),exercise_id INTEGER REFERENCES Exercise(exercise_id),order_in_superset INTEGER,PRIMARY KEY (superset_id, exercise_id));"
-        );
-        tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS Progress (progress_id INTEGER PRIMARY KEY,user_id INTEGER REFERENCES User(user_id),exercise_id INTEGER REFERENCES Exercise(exercise_id),date DATE,weight REAL,reps_completed INTEGER,time_taken INTEGER);"
+        tx.executeSql(`INSERT INTO Workout (name) VALUES (?)`, [text]);
+        tx.executeSql("select * from Workout", [], (_, { rows }) =>
+          console.log(JSON.stringify(rows))
         );
       },
-      null,
+      (error) => {
+        console.log(error);
+      },
       forceUpdate
     );
   };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>SQLite Example</Text>
+      <Surface elevation={1} style={styles.headerContainer}>
+        <Text style={styles.heading}>Workouts</Text>
+      </Surface>
 
       {Platform.OS === "web" ? (
         <View
@@ -116,19 +127,53 @@ export default function WorkoutScreen() {
         </View>
       ) : (
         <>
-          <View style={styles.flexRow}>
-            <TextInput
-              onChangeText={(text) => setText(text)}
-              onSubmitEditing={() => {
-                add(text);
-                setText(null);
-              }}
-              placeholder="what do you need to do?"
-              style={styles.input}
-              value={text}
-            />
-          </View>
-          <ScrollView style={styles.listArea}></ScrollView>
+          <FAB
+            icon="plus"
+            style={styles.fab}
+            size="large"
+            mode="elevated"
+            onPress={() => setVisible(true)}
+          />
+          <Portal>
+            <Modal
+              visible={visible}
+              onDismiss={() => setVisible(false)}
+              contentContainerStyle={styles.modalStyle}
+            >
+              <TextInput
+                onChangeText={(text) => setText(text)}
+                onSubmitEditing={() => {
+                  add(text);
+                  setText(null);
+                }}
+                placeholder="Name"
+                label="Workout name"
+                value={text}
+              />
+              <View style={styles.modalButtonsContainer}>
+                <Button
+                  onPress={() => setVisible(false)}
+                  mode="contained-tonal"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onPress={() => {
+                    setVisible(false);
+                    add(text);
+                    setText(null);
+                  }}
+                  mode="contained"
+                >
+                  Add
+                </Button>
+              </View>
+            </Modal>
+          </Portal>
+          <View style={styles.flexRow}></View>
+          <ScrollView style={styles.listArea}>
+            <Workouts key={`forceupdate-done-${forceUpdateId}`} />
+          </ScrollView>
         </>
       )}
     </View>
@@ -170,10 +215,36 @@ const styles = StyleSheet.create({
   },
   sectionContainer: {
     marginBottom: 16,
-    marginHorizontal: 16,
   },
   sectionHeading: {
     fontSize: 18,
     marginBottom: 8,
+  },
+  noWorkoutsText: {
+    fontSize: 18,
+    textAlign: "center",
+    marginTop: 10,
+  },
+  fab: {
+    position: "absolute",
+    //transform: [{ scaleX: 1.5 }, { scaleY: 1.5 }],
+    margin: 10,
+    right: 0,
+    bottom: 0,
+    zIndex: 1,
+  },
+  modalStyle: {
+    backgroundColor: "white",
+    padding: 20,
+    marginHorizontal: 10,
+  },
+  modalButtonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 30,
+  },
+  headerContainer: {
+    zIndex: 1,
+    paddingVertical: 8,
   },
 });

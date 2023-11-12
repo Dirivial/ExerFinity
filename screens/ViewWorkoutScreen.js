@@ -40,9 +40,24 @@ function ExerciseList({ onPressItem, exercises, exerciseInstances }) {
         let e = exercises.find((e) => e.exercise_id === exercise.exercise_id);
         return (
           e && (
-            <View key={index} style={styles.exerciseItemContainer}>
-              <Text variant="bodyMedium">{e.name}</Text>
-            </View>
+            <Surface
+              key={index}
+              elevation={1}
+              style={styles.exerciseItemContainer}
+            >
+              <Text variant="bodyLarge" style={styles.itemHeader}>
+                {e.name}
+              </Text>
+              <Text variant="bodySmall" style={styles.itemHeader}>
+                {e.description}
+              </Text>
+
+              <View style={styles.restRow}>
+                <Button icon="timer-outline">
+                  Rest Time {exercise.duration ? exercise.duration : "0"}s
+                </Button>
+              </View>
+            </Surface>
           )
         );
       })}
@@ -167,15 +182,29 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginHorizontal: 32,
   },
-  exerciseItemContainer: {
+  itemHeader: {
+    marginHorizontal: 8,
+    fontWeight: "bold",
+  },
+  itemDescription: {
+    marginHorizontal: 8,
+    fontWeight: "thin",
+  },
+  restRow: {
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginHorizontal: 32,
+    marginHorizontal: 0,
+  },
+  exerciseItemContainer: {
+    display: "flex",
+    flexDirection: "column",
+    //justifyContent: "space-between",
+    alignItems: "left",
+    marginHorizontal: 16,
     marginVertical: 8,
-    padding: 8,
     borderRadius: 8,
-    backgroundColor: MD3Colors.grey50,
+    padding: 8,
   },
 });

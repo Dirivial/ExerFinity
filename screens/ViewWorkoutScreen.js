@@ -57,6 +57,8 @@ function ExerciseList({ onPressItem, exercises, exerciseInstances }) {
                   Rest Time {exercise.duration ? exercise.duration : "0"}s
                 </Button>
               </View>
+
+              <View>{/* Show sets and reps here */}</View>
             </Surface>
           )
         );

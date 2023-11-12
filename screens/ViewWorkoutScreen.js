@@ -56,6 +56,7 @@ function ExerciseList({ onPressItem, exercises }) {
 export default function ViewWorkoutScreen({ navigation, route }) {
   const [workoutData, setWorkoutData] = useState(null);
   const [exercises, setExercises] = useState(null);
+  const [forceUpdate, forceUpdateId] = useForceUpdate();
 
   useEffect(() => {
     db.transaction((tx) => {
@@ -68,7 +69,7 @@ export default function ViewWorkoutScreen({ navigation, route }) {
         }
       );
     });
-  }, []);
+  }, [route.params]);
 
   return (
     <View style={styles.container}>
@@ -100,6 +101,11 @@ export default function ViewWorkoutScreen({ navigation, route }) {
       )}
     </View>
   );
+}
+
+function useForceUpdate() {
+  const [value, setValue] = useState(0);
+  return [() => setValue(value + 1), value];
 }
 
 const styles = StyleSheet.create({

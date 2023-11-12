@@ -61,7 +61,15 @@ export default function SettingsScreen() {
           "CREATE TABLE IF NOT EXISTS Workout (workout_id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT, date DATE,duration INTEGER,calories_burned INTEGER);"
         );
         tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS Exercise (exercise_id INTEGER PRIMARY KEY,name TEXT,description TEXT,category TEXT,equipment_required TEXT);"
+          "INSERT OR IGNORE INTO Workout (workout_id, name) VALUES (?, ?)",
+          [0, "Default"]
+        );
+        tx.executeSql(
+          "CREATE TABLE IF NOT EXISTS Exercise (exercise_id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT,description TEXT,category TEXT,equipment_required TEXT);"
+        );
+        tx.executeSql(
+          "INSERT OR IGNORE INTO Exercise (name, description, category) VALUES (?, ?, ?)",
+          ["Push up", "Push up", "Chest;Triceps"]
         );
         tx.executeSql(
           "CREATE TABLE IF NOT EXISTS ExerciseInstance (instance_id INTEGER PRIMARY KEY,workout_id INTEGER REFERENCES Workout(workout_id),exercise_id INTEGER REFERENCES Exercise(exercise_id),sets INTEGER,reps INTEGER,duration INTEGER,order_in_workout INTEGER);"

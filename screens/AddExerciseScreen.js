@@ -29,39 +29,54 @@ function openDatabase() {
 
 const db = openDatabase();
 
+function ExerciseItem({ exercise }) {
+  return (
+    <View style={styles.exerciseItem}>
+      <Text variant="bodyMedium">{exercise.name}</Text>
+    </View>
+  );
+}
+
 // Takes a workout_id and a function to add a new exercise to the workout
 export default function AddExerciseScreen({ navigation, route }) {
   const [exercises, setExercises] = useState(null);
-  const [selectedExercise, setSelectedExercise] = useState(null);
+  const [selectedExercise, setSelectedExercise] = useState(2);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     db.transaction((tx) => {
       tx.executeSql(`select * from Exercise`, [], (_, { rows: { _array } }) => {
-        setExercises(_array[0]);
+        setExercises(_array);
       });
     });
   }, []);
 
+  useEffect(() => {
+    console.log(exercises);
+  }, [exercises]);
+
   return (
     <View style={styles.container}>
-      {/*
-          <Button onPress={() => navigation.goBack()}>
-        back
-      </Button>
-    */}
-
       <Searchbar
         style={styles.searchBar}
         onChangeText={(query) => setSearchQuery(query)}
       />
       <ScrollView>
-        {exercises
-          ? exercises.map((exercise) => {
-              <Text>exercise.name</Text>;
-            })
-          : null}
+        {exercises &&
+          exercises.map((exercise) => {
+            return <ExerciseItem exercise={exercise} />;
+          })}
       </ScrollView>
+      <Button
+        onPress={() =>
+          navigation.navigate("ViewWorkout", {
+            workout_id: route.params.workout_id,
+            selectedExercise: selectedExercise,
+          })
+        }
+      >
+        Back
+      </Button>
     </View>
   );
 }
@@ -74,5 +89,11 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     margin: 10,
+  },
+  exerciseItem: {
+    margin: 10,
+    padding: 10,
+    backgroundColor: "#eee",
+    borderRadius: 10,
   },
 });

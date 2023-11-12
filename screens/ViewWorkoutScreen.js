@@ -33,30 +33,27 @@ function openDatabase() {
 
 const db = openDatabase();
 
-function ExerciseItem() {
-  return <View></View>;
-}
-
-function ExerciseList({ onPressItem, exercises }) {
+function ExerciseList({ onPressItem, exercises, exerciseInstances }) {
   return (
     <View>
-      {exercises.map((exercise) => {
-        return <ExerciseItem exercise={exercise} />;
+      {exerciseInstances.map((exercise, index) => {
+        let e = exercises.find((e) => e.exercise_id === exercise.exercise_id);
+        return (
+          e && (
+            <View key={index} style={styles.exerciseItemContainer}>
+              <Text variant="bodyMedium">{e.name}</Text>
+            </View>
+          )
+        );
       })}
-      <IconButton
-        icon="plus"
-        iconColor={MD3Colors.error50}
-        size={20}
-        onPress={() => console.log("Pressed")}
-      />
     </View>
   );
 }
 
 export default function ViewWorkoutScreen({ navigation, route }) {
   const [workoutData, setWorkoutData] = useState(null);
-  const [exercises, setExercises] = useState(null);
-  const [forceUpdate, forceUpdateId] = useForceUpdate();
+  const [exercises, setExercises] = useState([]);
+  const [exerciseInstances, setExerciseInstances] = useState([]);
 
   useEffect(() => {
     db.transaction((tx) => {
@@ -64,11 +61,44 @@ export default function ViewWorkoutScreen({ navigation, route }) {
         `select * from Workout where workout_id = ?`,
         [route.params.workout_id],
         (_, { rows: { _array } }) => {
-          console.log(_array[0]);
           setWorkoutData(_array[0]);
         }
       );
     });
+  }, []);
+
+  useEffect(() => {
+    db.transaction(
+      (tx) => {
+        tx.executeSql(
+          "SELECT * FROM ExerciseInstance WHERE workout_id = ?",
+          [route.params.workout_id],
+          (_, { rows: { _array } }) => {
+            if (_array.length != exerciseInstances.length) {
+              // Reduce number of re-renders
+              const sorted = _array.sort(
+                (a, b) => a.order_in_workout - b.order_in_workout
+              );
+              console.log(sorted);
+              setExerciseInstances(sorted);
+            }
+          }
+        );
+        tx.executeSql(
+          "SELECT E.* FROM Exercise E JOIN ExerciseInstance EI ON E.exercise_id = EI.exercise_id WHERE EI.workout_id = ?",
+          [route.params.workout_id],
+          (_, { rows: { _array } }) => {
+            // Reduce number of re-renders
+            if (_array.length != exercises.length) {
+              setExercises(_array);
+            }
+          }
+        );
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
   }, [route.params]);
 
   return (
@@ -84,7 +114,10 @@ export default function ViewWorkoutScreen({ navigation, route }) {
           <Text variant="headlineSmall" style={styles.headlineSmall}>
             Exercises
           </Text>
-          {exercises && <ExerciseList exercises={exercises} />}
+          <ExerciseList
+            exercises={exercises}
+            exerciseInstances={exerciseInstances}
+          />
           <IconButton
             icon="plus"
             iconColor={MD3Colors.error50}
@@ -94,6 +127,7 @@ export default function ViewWorkoutScreen({ navigation, route }) {
             onPress={() =>
               navigation.navigate("AddExercise", {
                 workout_id: route.params.workout_id,
+                num_exercises: exercises.length,
               })
             }
           />
@@ -132,5 +166,16 @@ const styles = StyleSheet.create({
   addExerciseButton: {
     alignSelf: "center",
     marginHorizontal: 32,
+  },
+  exerciseItemContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginHorizontal: 32,
+    marginVertical: 8,
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: MD3Colors.grey50,
   },
 });

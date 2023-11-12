@@ -9,7 +9,13 @@ import {
 } from "react-native-paper";
 import * as SQLite from "expo-sqlite";
 import { useState, useEffect } from "react";
-import { Platform, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Constants from "expo-constants";
 
 function openDatabase() {
@@ -29,18 +35,17 @@ function openDatabase() {
 
 const db = openDatabase();
 
-function ExerciseItem({ exercise }) {
+function ExerciseItem({ onPressItem, exercise }) {
   return (
-    <View style={styles.exerciseItem}>
+    <TouchableOpacity onPress={onPressItem} style={styles.exerciseItem}>
       <Text variant="bodyMedium">{exercise.name}</Text>
-    </View>
+    </TouchableOpacity>
   );
 }
 
 // Takes a workout_id and a function to add a new exercise to the workout
 export default function AddExerciseScreen({ navigation, route }) {
   const [exercises, setExercises] = useState(null);
-  const [selectedExercise, setSelectedExercise] = useState(2);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -55,6 +60,26 @@ export default function AddExerciseScreen({ navigation, route }) {
     console.log(exercises);
   }, [exercises]);
 
+  const handleItemPressed = (exercise_id) => {
+    db.transaction(
+      (tx) => {
+        // Add an instance of this exercise to the workout in the ExerciseInstance table
+        tx.executeSql(
+          `insert into ExerciseInstance (workout_id, exercise_id, order_in_workout) values (?, ?, ?)`,
+          [route.params.workout_id, exercise_id, route.params.num_exercises]
+        );
+      },
+      (error) => console.log(error),
+      () => {
+        console.log("Added exercise instance");
+        navigation.navigate("ViewWorkout", {
+          workout_id: route.params.workout_id,
+          selectedExercise: exercise_id,
+        });
+      }
+    );
+  };
+
   return (
     <View style={styles.container}>
       <Searchbar
@@ -64,19 +89,15 @@ export default function AddExerciseScreen({ navigation, route }) {
       <ScrollView>
         {exercises &&
           exercises.map((exercise) => {
-            return <ExerciseItem exercise={exercise} />;
+            return (
+              <ExerciseItem
+                key={exercise.exercise_id}
+                exercise={exercise}
+                onPressItem={() => handleItemPressed(exercise.exercise_id)}
+              />
+            );
           })}
       </ScrollView>
-      <Button
-        onPress={() =>
-          navigation.navigate("ViewWorkout", {
-            workout_id: route.params.workout_id,
-            selectedExercise: selectedExercise,
-          })
-        }
-      >
-        Back
-      </Button>
     </View>
   );
 }

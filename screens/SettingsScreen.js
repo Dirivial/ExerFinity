@@ -72,16 +72,24 @@ export default function SettingsScreen() {
           ["Push up", "Push up", "Chest;Triceps"]
         );
         tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS ExerciseInstance (instance_id INTEGER PRIMARY KEY,workout_id INTEGER REFERENCES Workout(workout_id),exercise_id INTEGER REFERENCES Exercise(exercise_id),sets INTEGER,reps INTEGER,duration INTEGER,order_in_workout INTEGER);"
+          "INSERT OR IGNORE INTO Exercise (name, description, category) VALUES (?, ?, ?)",
+          ["Pull up", "Normal Pull up", "Back;Biceps"]
         );
         tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS SuperSet (superset_id INTEGER PRIMARY KEY,workout_id INTEGER REFERENCES Workout(workout_id),name TEXT,order_in_workout INTEGER);"
+          "INSERT OR IGNORE INTO Exercise (name, description, category) VALUES (?, ?, ?)",
+          ["Squat", "A Squat.", "Legs;Compound"]
+        );
+        tx.executeSql(
+          "CREATE TABLE IF NOT EXISTS ExerciseInstance (instance_id INTEGER PRIMARY KEY AUTOINCREMENT,workout_id INTEGER REFERENCES Workout(workout_id),exercise_id INTEGER REFERENCES Exercise(exercise_id),sets INTEGER,reps INTEGER,duration INTEGER,order_in_workout INTEGER);"
+        );
+        tx.executeSql(
+          "CREATE TABLE IF NOT EXISTS SuperSet (superset_id INTEGER PRIMARY KEY AUTOINCREMENT,workout_id INTEGER REFERENCES Workout(workout_id),name TEXT,order_in_workout INTEGER);"
         );
         tx.executeSql(
           "CREATE TABLE IF NOT EXISTS SuperSetExercise (superset_id INTEGER REFERENCES SuperSet(superset_id),exercise_id INTEGER REFERENCES Exercise(exercise_id),order_in_superset INTEGER,PRIMARY KEY (superset_id, exercise_id));"
         );
         tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS Progress (progress_id INTEGER PRIMARY KEY,user_id INTEGER REFERENCES User(user_id),exercise_id INTEGER REFERENCES Exercise(exercise_id),date DATE,weight REAL,reps_completed INTEGER,time_taken INTEGER);"
+          "CREATE TABLE IF NOT EXISTS Progress (progress_id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER REFERENCES User(user_id),exercise_id INTEGER REFERENCES Exercise(exercise_id),date DATE,weight REAL,reps_completed INTEGER,time_taken INTEGER);"
         );
       },
       (error) => console.log(error),

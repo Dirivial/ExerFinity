@@ -135,7 +135,7 @@ export default function ViewWorkoutScreen({ navigation, route }) {
           />
           <IconButton
             icon="plus"
-            iconColor={MD3Colors.error50}
+            iconColor={MD3Colors.tertiary50}
             size={40}
             mode="contained"
             style={styles.addExerciseButton}

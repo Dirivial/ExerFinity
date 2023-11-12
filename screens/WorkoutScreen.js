@@ -12,6 +12,9 @@ import { useState, useEffect } from "react";
 import { Platform, ScrollView, StyleSheet, View } from "react-native";
 import Constants from "expo-constants";
 import { createStackNavigator } from "@react-navigation/stack";
+import EditWorkoutScreen from "./EditWorkoutScreen";
+import ViewWorkoutScreen from "./ViewWorkoutScreen";
+import AddExerciseScreen from "./AddExerciseScreen";
 
 const Stack = createStackNavigator();
 
@@ -175,7 +178,7 @@ function WorkoutListScreen({ navigation }) {
             <Workouts
               key={`forceupdate-done-${forceUpdateId}`}
               navigate={(workout_id) => {
-                navigation.navigate("Create Workout", {
+                navigation.navigate("ViewWorkout", {
                   workout_id: workout_id,
                 });
               }}
@@ -187,21 +190,31 @@ function WorkoutListScreen({ navigation }) {
   );
 }
 
-function SomeSettingsScreen({ navigation, route }) {
-  return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <Button onPress={() => navigation.goBack()}>
-        Workout: {route.params.workout_id}
-      </Button>
-    </View>
-  );
-}
-
 export default function WorkoutScreen() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="WorkoutList" component={WorkoutListScreen} />
-      <Stack.Screen name="Create Workout" component={SomeSettingsScreen} />
+      <Stack.Screen
+        options={{
+          headerShown: false,
+        }}
+        name="WorkoutList"
+        component={WorkoutListScreen}
+      />
+      <Stack.Screen
+        name="ViewWorkout"
+        options={{ title: "Workout" }}
+        component={ViewWorkoutScreen}
+      />
+      <Stack.Screen
+        name="CreateWorkout"
+        options={{ title: "Workout" }}
+        component={EditWorkoutScreen}
+      />
+      <Stack.Screen
+        name="AddExercise"
+        options={{ title: "Add Exercise" }}
+        component={AddExerciseScreen}
+      />
     </Stack.Navigator>
   );
 }

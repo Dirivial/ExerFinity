@@ -37,7 +37,7 @@ export default function HomeScreen() {
   }, []);
   return (
     <View style={styles.container}>
-      <Text variant="headlineMedium">Welcome {name}!</Text>
+      <Text variant="headlineMedium">Welcome, {name}!</Text>
     </View>
   );
 }

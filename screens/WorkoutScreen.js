@@ -82,7 +82,7 @@ function Workouts({ onPressItem, navigate: navigate }) {
   );
 }
 
-function WorkoutListScreen({ navigation }) {
+export default function WorkoutScreen({ navigation }) {
   const [text, setText] = useState(null);
   const [visible, setVisible] = useState(false);
   const [forceUpdate, forceUpdateId] = useForceUpdate();
@@ -190,7 +190,7 @@ function WorkoutListScreen({ navigation }) {
   );
 }
 
-export default function WorkoutScreen() {
+function WorkoutCringeScreen() {
   return (
     <Stack.Navigator>
       <Stack.Screen

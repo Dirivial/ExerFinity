@@ -115,7 +115,7 @@ export default function SettingsScreen() {
   };
 
   useEffect(() => {
-    // Check if the database has already been setup
+    // Check if the database has already been setup before deciding to run the setup or not
     db.transaction(
       (tx) => {
         tx.executeSql("SELECT * FROM User", [], (_, { rows }) => {
@@ -123,7 +123,7 @@ export default function SettingsScreen() {
         });
       },
       () => {
-        // If the database has been setup, run the setup
+        // If the database has not been setup, run the setup
         runSetup();
         importData();
       },

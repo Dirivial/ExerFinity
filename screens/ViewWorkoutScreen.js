@@ -11,10 +11,11 @@ import {
   MD3Colors,
 } from "react-native-paper";
 import * as SQLite from "expo-sqlite";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Platform, ScrollView, StyleSheet, View } from "react-native";
 import Constants from "expo-constants";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { TimePickerModal } from "react-native-paper-dates";
 
 function openDatabase() {
   if (Platform.OS === "web") {
@@ -38,6 +39,11 @@ function ExerciseList({ onPressItem, exercises, exerciseInstances }) {
     <View>
       {exerciseInstances.map((exercise, index) => {
         let e = exercises.find((e) => e.exercise_id === exercise.exercise_id);
+        const reps = JSON.parse(exercise.reps);
+        const sets = [];
+        for (let i = 0; i < exercise.set_count; i++) {
+          sets.push(reps[i]);
+        }
         return (
           e && (
             <Surface
@@ -54,11 +60,24 @@ function ExerciseList({ onPressItem, exercises, exerciseInstances }) {
 
               <View style={styles.restRow}>
                 <Button icon="timer-outline">
-                  Rest Time {exercise.duration ? exercise.duration : "0"}s
+                  Rest Time {exercise.rest ? exercise.rest : "0"}s
                 </Button>
               </View>
 
-              <View>{/* Show sets and reps here */}</View>
+              <View>
+                {sets.map((set, index) => {
+                  return (
+                    <View key={index} style={styles.setRow}>
+                      <Text variant="bodySmall" style={styles.setNumber}>
+                        Set {index + 1}
+                      </Text>
+                      <Text variant="bodySmall" style={styles.setReps}>
+                        {set} reps
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
             </Surface>
           )
         );
@@ -71,6 +90,19 @@ export default function ViewWorkoutScreen({ navigation, route }) {
   const [workoutData, setWorkoutData] = useState(null);
   const [exercises, setExercises] = useState([]);
   const [exerciseInstances, setExerciseInstances] = useState([]);
+
+  const [visible, setVisible] = useState(false);
+  const onDismiss = useCallback(() => {
+    setVisible(false);
+  }, [setVisible]);
+
+  const onConfirm = useCallback(
+    ({ hours, minutes }) => {
+      setVisible(false);
+      console.log({ hours, minutes });
+    },
+    [setVisible]
+  );
 
   useEffect(() => {
     db.transaction((tx) => {
@@ -150,6 +182,13 @@ export default function ViewWorkoutScreen({ navigation, route }) {
           />
         </ScrollView>
       )}
+      <TimePickerModal
+        visible={visible}
+        onDismiss={onDismiss}
+        onConfirm={onConfirm}
+        hours={12}
+        minutes={14}
+      />
     </View>
   );
 }
@@ -198,6 +237,21 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginHorizontal: 0,
+  },
+  setRow: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginHorizontal: 0,
+  },
+  setNumber: {
+    marginHorizontal: 8,
+    fontWeight: "bold",
+  },
+  setReps: {
+    marginHorizontal: 8,
+    fontWeight: "thin",
   },
   exerciseItemContainer: {
     display: "flex",

@@ -56,17 +56,20 @@ export default function AddExerciseScreen({ navigation, route }) {
     });
   }, []);
 
-  useEffect(() => {
-    console.log(exercises);
-  }, [exercises]);
-
   const handleItemPressed = (exercise_id) => {
     db.transaction(
       (tx) => {
         // Add an instance of this exercise to the workout in the ExerciseInstance table
         tx.executeSql(
-          `insert into ExerciseInstance (workout_id, exercise_id, order_in_workout) values (?, ?, ?)`,
-          [route.params.workout_id, exercise_id, route.params.num_exercises]
+          `insert into ExerciseInstance (workout_id, exercise_id, order_in_workout, set_count, reps, rest) values (?, ?, ?, ?, ?, ?)`,
+          [
+            route.params.workout_id,
+            exercise_id,
+            route.params.num_exercises,
+            1,
+            JSON.stringify({ 0: 0 }),
+            0,
+          ]
         );
       },
       (error) => console.log(error),

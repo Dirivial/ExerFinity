@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { Text, TextInput, Button, RadioButton } from "react-native-paper";
 import * as SQLite from "expo-sqlite";
 import Constants from "expo-constants";
+import InitDB from "../utils/InitDB";
 
 function openDatabase() {
   if (Platform.OS === "web") {
@@ -51,50 +52,7 @@ export default function SettingsScreen() {
 
   const runSetup = () => {
     console.log("Running setup");
-    db.transaction(
-      (tx) => {
-        tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS User (user_id INTEGER PRIMARY KEY,username TEXT,email TEXT,password TEXT,date_of_birth DATE,gender TEXT,height REAL, metric_height BOOL,weight REAL, metric_weight BOOL);"
-        );
-        tx.executeSql("INSERT OR IGNORE INTO User (user_id) VALUES (?)", [0]);
-        tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS Workout (workout_id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT, date DATE,duration INTEGER,calories_burned INTEGER);"
-        );
-        tx.executeSql(
-          "INSERT OR IGNORE INTO Workout (workout_id, name) VALUES (?, ?)",
-          [0, "Default"]
-        );
-        tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS Exercise (exercise_id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT,description TEXT,category TEXT,equipment_required TEXT);"
-        );
-        tx.executeSql(
-          "INSERT OR IGNORE INTO Exercise (name, description, category) VALUES (?, ?, ?)",
-          ["Push up", "Push up", "Chest;Triceps"]
-        );
-        tx.executeSql(
-          "INSERT OR IGNORE INTO Exercise (name, description, category) VALUES (?, ?, ?)",
-          ["Pull up", "Normal Pull up", "Back;Biceps"]
-        );
-        tx.executeSql(
-          "INSERT OR IGNORE INTO Exercise (name, description, category) VALUES (?, ?, ?)",
-          ["Squat", "A Squat.", "Legs;Compound"]
-        );
-        tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS ExerciseInstance (instance_id INTEGER PRIMARY KEY AUTOINCREMENT,workout_id INTEGER REFERENCES Workout(workout_id),exercise_id INTEGER REFERENCES Exercise(exercise_id),sets INTEGER,reps INTEGER,duration INTEGER,order_in_workout INTEGER);"
-        );
-        tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS SuperSet (superset_id INTEGER PRIMARY KEY AUTOINCREMENT,workout_id INTEGER REFERENCES Workout(workout_id),name TEXT,order_in_workout INTEGER);"
-        );
-        tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS SuperSetExercise (superset_id INTEGER REFERENCES SuperSet(superset_id),exercise_id INTEGER REFERENCES Exercise(exercise_id),order_in_superset INTEGER,PRIMARY KEY (superset_id, exercise_id));"
-        );
-        tx.executeSql(
-          "CREATE TABLE IF NOT EXISTS Progress (progress_id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER REFERENCES User(user_id),exercise_id INTEGER REFERENCES Exercise(exercise_id),date DATE,weight REAL,reps_completed INTEGER,time_taken INTEGER);"
-        );
-      },
-      (error) => console.log(error),
-      () => console.log("Success")
-    );
+    InitDB(db);
   };
 
   const getAll = () => {
@@ -127,8 +85,7 @@ export default function SettingsScreen() {
     );
   };
 
-  useEffect(() => {
-    runSetup();
+  const importData = () => {
     db.transaction((tx) => {
       // Get the user's information from the database
       tx.executeSql(
@@ -155,6 +112,26 @@ export default function SettingsScreen() {
         }
       );
     });
+  };
+
+  useEffect(() => {
+    // Check if the database has already been setup
+    db.transaction(
+      (tx) => {
+        tx.executeSql("SELECT * FROM User", [], (_, { rows }) => {
+          console.log(JSON.stringify(rows));
+        });
+      },
+      () => {
+        // If the database has been setup, run the setup
+        runSetup();
+        importData();
+      },
+      () => {
+        // If the database has been setup, import the data
+        importData();
+      }
+    );
   }, []);
 
   return (

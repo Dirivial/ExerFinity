@@ -12,9 +12,6 @@ import { useState, useEffect } from "react";
 import { Platform, ScrollView, StyleSheet, View } from "react-native";
 import Constants from "expo-constants";
 import { createStackNavigator } from "@react-navigation/stack";
-import EditWorkoutScreen from "./EditWorkoutScreen";
-import ViewWorkoutScreen from "./ViewWorkoutScreen";
-import AddExerciseScreen from "./AddExerciseScreen";
 
 const Stack = createStackNavigator();
 
@@ -187,35 +184,6 @@ export default function WorkoutScreen({ navigation }) {
         </>
       )}
     </View>
-  );
-}
-
-function WorkoutCringeScreen() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen
-        options={{
-          headerShown: false,
-        }}
-        name="WorkoutList"
-        component={WorkoutListScreen}
-      />
-      <Stack.Screen
-        name="ViewWorkout"
-        options={{ title: "Workout" }}
-        component={ViewWorkoutScreen}
-      />
-      <Stack.Screen
-        name="CreateWorkout"
-        options={{ title: "Workout" }}
-        component={EditWorkoutScreen}
-      />
-      <Stack.Screen
-        name="AddExercise"
-        options={{ title: "Add Exercise" }}
-        component={AddExerciseScreen}
-      />
-    </Stack.Navigator>
   );
 }
 

@@ -16,6 +16,7 @@ import { Platform, ScrollView, StyleSheet, View } from "react-native";
 import Constants from "expo-constants";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { TimePickerModal } from "react-native-paper-dates";
+import ExerciseComponent from "../components/ExerciseComponent";
 
 function openDatabase() {
   if (Platform.OS === "web") {
@@ -34,7 +35,13 @@ function openDatabase() {
 
 const db = openDatabase();
 
-function ExerciseList({ onPressItem, exercises, exerciseInstances }) {
+function ExerciseList({
+  onPressItem,
+  exercises,
+  exerciseInstances,
+  updateSetsOfExercise,
+  changeRestTime,
+}) {
   return (
     <View>
       {exerciseInstances.map((exercise, index) => {
@@ -46,39 +53,24 @@ function ExerciseList({ onPressItem, exercises, exerciseInstances }) {
         }
         return (
           e && (
-            <Surface
+            <ExerciseComponent
               key={index}
-              elevation={1}
-              style={styles.exerciseItemContainer}
-            >
-              <Text variant="bodyLarge" style={styles.itemHeader}>
-                {e.name}
-              </Text>
-              <Text variant="bodySmall" style={styles.itemHeader}>
-                {e.description}
-              </Text>
-
-              <View style={styles.restRow}>
-                <Button icon="timer-outline">
-                  Rest Time {exercise.rest ? exercise.rest : "0"}s
-                </Button>
-              </View>
-
-              <View>
-                {sets.map((set, index) => {
-                  return (
-                    <View key={index} style={styles.setRow}>
-                      <Text variant="bodySmall" style={styles.setNumber}>
-                        Set {index + 1}
-                      </Text>
-                      <Text variant="bodySmall" style={styles.setReps}>
-                        {set} reps
-                      </Text>
-                    </View>
-                  );
-                })}
-              </View>
-            </Surface>
+              exerciseIndex={index}
+              exercise={e}
+              sets={sets}
+              addSetAction={() => {
+                updateSetsOfExercise(index, [
+                  ...sets,
+                  sets.length > 0 ? sets.at(-1) : 0,
+                ]);
+              }}
+              updateSets={(sets) => {
+                updateSetsOfExercise(index, sets);
+              }}
+              updateRestTime={() => {
+                changeRestTime(index);
+              }}
+            />
           )
         );
       })}
@@ -166,6 +158,17 @@ export default function ViewWorkoutScreen({ navigation, route }) {
           <ExerciseList
             exercises={exercises}
             exerciseInstances={exerciseInstances}
+            changeRestTime={(index) => {
+              console.log(
+                "I want to update the rest time of exercise nr: " + index
+              );
+            }}
+            updateSetsOfExercise={(index, sets) => {
+              console.log(
+                "I want to update the sets of exercise nr: " + index + " to: "
+              );
+              console.log(sets);
+            }}
           />
           <IconButton
             icon="plus"
@@ -230,37 +233,5 @@ const styles = StyleSheet.create({
   itemDescription: {
     marginHorizontal: 8,
     fontWeight: "thin",
-  },
-  restRow: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginHorizontal: 0,
-  },
-  setRow: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginHorizontal: 0,
-  },
-  setNumber: {
-    marginHorizontal: 8,
-    fontWeight: "bold",
-  },
-  setReps: {
-    marginHorizontal: 8,
-    fontWeight: "thin",
-  },
-  exerciseItemContainer: {
-    display: "flex",
-    flexDirection: "column",
-    //justifyContent: "space-between",
-    alignItems: "left",
-    marginHorizontal: 16,
-    marginVertical: 8,
-    borderRadius: 8,
-    padding: 8,
   },
 });
